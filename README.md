@@ -86,6 +86,60 @@ user-service:
 
 **六.Hystrix断容器**：
 
-1）服务监控、服务容错、线程隔离等
+1.使用原因
+
+ 微服务架构中，服务与服务之间通过远程调用的方式进行通信，一旦某个被调用的服务发生故障，其依赖的服务也会发生故障。并发生故障蔓延，
+
+最终导致系统瘫痪，Hystrix实现了短路器模式，当某个服务发生故障时，通过断路器的监控，给调用方返回一个错误响应，而非长时间的等待。
+
+2.功能：服务监控、服务降级、服务熔断、线程隔离、请求缓存、请求合并等
+
+3.服务降级
+
+1）演示：hystrix-service模块中发起请求http://localhost:8401/user/testFallback通过
+
+```
+@HystrixCommand(fallbackMethod = "getDefaultMethod")
+```
+
+注解在user-service服务断开时降级调用本模块中的getDefaultMethod方法
+
+2）HystrixCommand常用参数
+
+```
+fallbackMethod：指定服务降级处理方法；
+ignoreExceptions：忽略某些异常，不发生服务降级；
+commandKey：命令名称，用于区分不同的命令；
+groupKey：分组名称，Hystrix会根据不同的分组来统计命令的告警及仪表盘信息；
+threadPoolKey：线程池名称，用于划分线程池。
+```
+
+4.请求缓存
+
+1）相关注解
+
+```
+@CacheResult：开启缓存，默认所有参数作为缓存的key，cacheKeyMethod可以通过返回String类型的方法指定key；
+@CacheKey：指定缓存的key，可以指定参数或指定参数中的属性值为缓存key，cacheKeyMethod还可以通过返回String类型的方法指定；
+@CacheRemove：移除缓存，需要指定commandKey。
+```
+
+2）演示：hystrix-service模块中发起请求http://localhost:8401/user/testCache，控制台打印一次请求user-service,其余两次调用缓存
+
+5.请求合并
+
+1）注解及常用属性
+
+```
+@HystrixCollapser
+    batchMethod：用于设置请求合并的方法；
+    collapserProperties：请求合并属性，用于控制实例属性，有很多；
+    timerDelayInMilliseconds：collapserProperties中的属性，用于控制每隔多少时间合并一次请求；
+```
+
+6.服务监控 Hystrix Dashboard
+
+1）Hystrix Dashboard是spring cloud中用来查看Hystrix实例执行情况的一种仪表盘组件。支持查看单个实例和集群实例
 
 
+notes:仅供自己学习，参考来源：[https://github.com/macrozheng/springcloud-learning]
